@@ -1,0 +1,36 @@
+<form> 
+  <div class="form-group">
+    <label for="street">Street</label>
+    <input type="text" name="street" class="form-control" id="street" placeholder="Street" [(ngModel)]="details.street" required>
+  </div>
+  <div class="form-group">
+    <label for="city">City</label>
+    <input type="text" name="city" class="form-control" id="city" placeholder="City" [(ngModel)]="details.city" required>
+  </div>
+  <div class="form-group">
+    <label for="state">State</label>
+    <input type="text" name="state" class="form-control" id="state" placeholder="State" [(ngModel)]="details.state" minlength="2" maxlength="2" required>
+  </div>
+  <div class="form-group">
+    <label for="post_code">Zip Code</label>
+    <input type="text" name="post_code" class="form-control" id="post_code" placeholder="Zip Code" [(ngModel)]="details.post_code" minlength="5" maxlength="5" required>
+  </div>
+  <div class="form-group">
+    <label for="phone_number">Phone Number</label>
+    <input type="tel" name="phone_number" class="form-control" id="phone_number" placeholder="Phone Number" [(ngModel)]="details.phone_number" minlength="10" maxlength="10" required>
+  </div>
+
+  <div id="invalid" *ngIf="!isValidForm()">
+      <ul>
+        <li *ngFor="let hint of invalidHints">
+          {{ hint }}
+        </li>
+      </ul>
+  </div>
+
+  <button type="submit" (click)="onSubmit($event)" class="btn btn-primary">Submit</button>
+
+
+
+
+</form>

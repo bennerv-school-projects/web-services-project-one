@@ -6,5 +6,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'web-services-project-one';
+  title = 'Text Me When You Get There';
+  description = 'A way to notify someone you\'ve readched your destination!';
 }
