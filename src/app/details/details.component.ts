@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+
 import { Details } from './details';
+import { TwilioService } from '../twilio.service';
 
 @Component({
   selector: 'app-details',
@@ -12,17 +14,25 @@ export class DetailsComponent implements OnInit {
   validForm = true;
   invalidHints : String[] = [];
 
-  constructor() { }
+  constructor(private twilioService: TwilioService) { }
 
   ngOnInit() {
   }
 
   onSubmit(event: Event): void {
-    console.log(this.details);
+    if(this.isValidForm()) {
+      this.twilioService.sendTextMessage(this.details)
+        .subscribe(
+          (res) => console.log(res.json()),
+          (error) => console.log(error),
+          () => console.log("I'm Done!")
+        )
+    }
   }
 
   isValidForm(): Boolean {
     this.invalidHints = [] as String[];
+    this.validForm = true;
 
     if(this.details.city === undefined) {
       this.invalidHints.push("Invalid Address Input");
@@ -44,12 +54,11 @@ export class DetailsComponent implements OnInit {
       this.validForm = false;
     }
 
-    if(this.details.phone_number === undefined || this.details.phone_number > 9999999999 || this.details.post_code < 1000000000) {
-      this.invalidHints.push("Invalid Zip Code Input");
+    if(this.details.phone_number === undefined || this.details.phone_number > 9999999999 || this.details.phone_number < 1000000000) {
+      this.invalidHints.push("Invalid Phone Number Input");
       this.validForm = false;
     }
-
+    
     return this.validForm;
   }
-
 }
