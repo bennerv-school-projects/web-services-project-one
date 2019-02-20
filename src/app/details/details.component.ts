@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Details } from './details';
 import { TwilioService } from '../twilio.service';
@@ -16,21 +17,30 @@ export class DetailsComponent implements OnInit {
   private invalidHints: String[] = [];
   private currentLocation: Position;
 
-  constructor(private twilioService: TwilioService) { }
+  constructor(private twilioService: TwilioService, private router: Router) { }
 
   ngOnInit() { }
 
+  /*
+   * Purpose: On button press, validates the form and starts the initial API calls to Twilio and Google Distance Matrix API
+   */
   private onSubmit(event: Event): void {
     if (this.isValidForm()) {
 
-      // Get the user's current location
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.currentLocation = position;
-          this.distanceMatrixApiPromise();
-        },
-        (error) => alert("Failed to get location. Please make sure it's enabled and try again")
-      );
+      this.router.navigate(['/locate', {
+        'name': this.details.name,
+        'address': this.details.street + " " + this.details.city + " " + this.details.state + " " + this.details.post_code,
+        'phone': this.details.phone_number
+      }]);
+
+      // // Get the user's current location
+      // navigator.geolocation.getCurrentPosition(
+      //   (position) => {
+      //     this.currentLocation = position;
+      //     this.distanceMatrixApiPromise();
+      //   },
+      //   (error) => alert("Failed to get location. Please make sure it's enabled and try again")
+      // );
     }
   }
 
@@ -80,26 +90,32 @@ export class DetailsComponent implements OnInit {
         console.log(e);
       }
 
-      // this.callTwilioApi(distance, duration)
+      // Call the twilio api to send out the initial text message
+      this.callTwilioApi(distance, duration)
     }, (error) => {
       alert("Failed to query for the desired location");
-      console.log(error);
     });
   }
 
 
   /* 
-   * Purpose: Calls the Twilio Service which calls the API to send a text message
+   * Purpose: Calls the Twilio Service which calls the API to send out the initial text message
    */
   private callTwilioApi(distance: string, duration: string): void {
     console.log(this.twilioService);
-    this.twilioService.sendTextMessage(this.details, distance, duration).subscribe(
-      (res) => console.log(res),
+    this.twilioService.sendInitialTextMessage(this.details, distance, duration).subscribe(
+      (res) => {
+        // Move the route to the next page.  Pass Details object
+        console.log(res)
+        this.router.navigate(['/locate']);
+      },
       (error) => console.log(error)
     );
   }
 
-  // Check if the form filled out was valid
+  /* 
+   * Purpose: Checks if the form has all the required fields and populates hints if the form is invalid
+   */
   private isValidForm(): Boolean {
     this.invalidHints = [] as String[];
     this.validForm = true;

@@ -23,7 +23,7 @@ export class TwilioService {
    * Purpose: Sends the initial query to the Twilio API to send out a text message
    * Returns: An Observable<any> which is the response of the API call when it occurs
    */
-  sendTextMessage(details: Details, distance: string, duration: string): Observable<any> {
+  public sendInitialTextMessage(details: Details, distance: string, duration: string): Observable<any> {
     const httpOptions = {
       headers: this.twilioAuthorizationHeader
     };
