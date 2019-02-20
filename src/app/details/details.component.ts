@@ -27,20 +27,14 @@ export class DetailsComponent implements OnInit {
   private onSubmit(event: Event): void {
     if (this.isValidForm()) {
 
-      this.router.navigate(['/locate', {
-        'name': this.details.name,
-        'address': this.details.street + " " + this.details.city + " " + this.details.state + " " + this.details.post_code,
-        'phone': this.details.phone_number
-      }]);
-
-      // // Get the user's current location
-      // navigator.geolocation.getCurrentPosition(
-      //   (position) => {
-      //     this.currentLocation = position;
-      //     this.distanceMatrixApiPromise();
-      //   },
-      //   (error) => alert("Failed to get location. Please make sure it's enabled and try again")
-      // );
+      // Get the user's current location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.currentLocation = position;
+          this.distanceMatrixApiPromise();
+        },
+        (error) => alert("Failed to get location. Please make sure it's enabled and try again")
+      );
     }
   }
 
@@ -107,7 +101,13 @@ export class DetailsComponent implements OnInit {
       (res) => {
         // Move the route to the next page.  Pass Details object
         console.log(res)
-        this.router.navigate(['/locate']);
+        this.router.navigate(['/locate', {
+          'name': this.details.name,
+          'street': this.details.street,
+          'city': this.details.city,
+          'state': this.details.state,
+          'phone': this.details.phone_number
+        }]);
       },
       (error) => console.log(error)
     );

@@ -9,10 +9,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DetailsComponent } from './details/details.component';
 import { LocationComponent } from './location/location.component';
+import { SuccessComponent } from './success/success.component';
 
 const appRoutes: Routes = [
   { path: 'details', component: DetailsComponent },
   { path: 'locate', component: LocationComponent },
+  { path: 'success', component: SuccessComponent },
   { path: '', redirectTo: 'details', pathMatch: 'full' }
 ];
 
@@ -20,7 +22,8 @@ const appRoutes: Routes = [
   declarations: [
     AppComponent,
     DetailsComponent,
-    LocationComponent
+    LocationComponent,
+    SuccessComponent
   ],
   imports: [
     BrowserModule,

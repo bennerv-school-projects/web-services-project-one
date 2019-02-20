@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { routerNgProbeToken } from '@angular/router/src/router_module';
+import { TwilioService } from '../twilio.service';
 
 @Component({
   selector: 'app-location',
@@ -10,27 +11,34 @@ import { routerNgProbeToken } from '@angular/router/src/router_module';
 export class LocationComponent implements OnInit {
 
   private TIME_BETWEEN_LOCATION_QUERIES: number = 30000;
-  private address: String;
-  private name: String;
-  private phoneNumber: String;
-  private watchId: number;
+  private street: string;
+  private city: string;
+  private state: string;
+  private name: string;
+  private phoneNumber: string;
+  private intervalId: NodeJS.Timer;
 
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  constructor(private router: Router, private route: ActivatedRoute, private twilioService: TwilioService) { }
 
   ngOnInit() {
-    if (!this.route.snapshot.paramMap.has('address') || !this.route.snapshot.paramMap.has('name') || !this.route.snapshot.paramMap.has('phone')) {
+    if (!this.route.snapshot.paramMap.has('street') || !this.route.snapshot.paramMap.has('city') || !this.route.snapshot.paramMap.has('state') || !this.route.snapshot.paramMap.has('name') || !this.route.snapshot.paramMap.has('phone')) {
       this.router.navigate(['/details']);
       return;
     }
 
-    this.address = this.route.snapshot.paramMap.get('address');
+    this.street = this.route.snapshot.paramMap.get('street');
+    this.city = this.route.snapshot.paramMap.get('city');
+    this.state = this.route.snapshot.paramMap.get('state');
     this.name = this.route.snapshot.paramMap.get('name');
     this.phoneNumber = this.route.snapshot.paramMap.get('phone');
     this.setupLocationCollection();
   }
 
+  /*
+   * Purpose: Sets up an interval for querying the google geocoder api
+   */
   private setupLocationCollection(): void {
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       navigator.geolocation.getCurrentPosition(
         (position) => this.reverseGeocode(position),
         (error) => console.log(error)
@@ -43,11 +51,27 @@ export class LocationComponent implements OnInit {
    */
   private reverseGeocode(position: Position) {
     console.log(position);
-    // this.reverseGeocodePromise(position).then(
-    //   (result) => {
-    //     console.log(result)
-    //   },
-    //   (error) => console.log(error));
+    this.reverseGeocodePromise(position).then(
+      (result) => {
+        // Geocode API Result:
+        console.log(result)
+        Object.keys(result).forEach((addressIndexKey) => {
+          Object.keys(result[addressIndexKey]).forEach((formattedAddressKey) => {
+            if (formattedAddressKey.toLowerCase() === "formatted_address") {
+              if (this.compareAddress(result[addressIndexKey][formattedAddressKey])) {
+                clearInterval(this.intervalId);
+                this.twilioService.sendTextMessage(this.phoneNumber, this.name).subscribe(
+                  (twilioResult) => this.router.navigate(['success']),
+                  (twilioError) => console.log(twilioError)
+                );
+
+                return;
+              }
+            }
+          })
+        });
+      },
+      (error) => console.log(error));
   }
 
   /*
@@ -74,5 +98,35 @@ export class LocationComponent implements OnInit {
         }
       })
     });
+  }
+
+  /*
+   * Purpose: Compare the destination address to the current address received by the reverse geocoder API
+   * Returns: true if
+   */
+  private compareAddress(navigatedAddress: string): boolean {
+    let navigatedAddressParts = navigatedAddress.split(',');
+
+    // Need a street, city, and state to compare against
+    if (navigatedAddressParts.length < 3) {
+      return;
+    }
+
+    // index 0 is the street
+    if (!navigatedAddressParts[0].toUpperCase().includes(this.street.toUpperCase())) {
+      return false;
+    }
+
+    // index 1 is the city
+    if (!navigatedAddressParts[1].toUpperCase().includes(this.city.toUpperCase())) {
+      return false
+    }
+
+    // index 2 is state and zip
+    if (!navigatedAddressParts[2].toUpperCase().includes(this.state.toUpperCase())) {
+      return false
+    }
+
+    return true;
   }
 }
