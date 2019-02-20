@@ -11,8 +11,9 @@ import { DetailsComponent } from './details/details.component';
 import { LocationComponent } from './location/location.component';
 
 const appRoutes: Routes = [
-  { path: '', component: DetailsComponent },
-  { path: 'locate', component: LocationComponent }
+  { path: 'details', component: DetailsComponent },
+  { path: 'locate', component: LocationComponent },
+  { path: '', redirectTo: 'details', pathMatch: 'full' }
 ];
 
 @NgModule({
@@ -28,7 +29,7 @@ const appRoutes: Routes = [
     HttpClientModule,
     RouterModule.forRoot(
       appRoutes,
-      { enableTracing: true }
+      { enableTracing: false }
     )
   ],
   providers: [],

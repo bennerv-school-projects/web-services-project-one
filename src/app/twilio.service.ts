@@ -19,7 +19,11 @@ export class TwilioService {
   constructor(private http: HttpClient) {
   }
 
-  sendTextMessage(details: Details): Observable<any> {
+  /*
+   * Purpose: Sends the initial query to the Twilio API to send out a text message
+   * Returns: An Observable<any> which is the response of the API call when it occurs
+   */
+  sendTextMessage(details: Details, distance: string, duration: string): Observable<any> {
     const httpOptions = {
       headers: this.twilioAuthorizationHeader
     };
@@ -27,7 +31,7 @@ export class TwilioService {
     let formData: FormData = new FormData();
     formData.append("From", this.twilioFromNumber);
     formData.append("To", "+1" + details.phone_number);
-    formData.append("Body", details.street + " " + details.city + " " + details.state);
+    formData.append("Body", details.name + " will reach " + details.street + " " + details.city + " " + details.state + " in approximately " + duration + ". Approximate distance: " + distance);
 
     // return this.http.post(this.twilioSendSmsApi, formData, httpOptions);
     return undefined

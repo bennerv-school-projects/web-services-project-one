@@ -1,4 +1,5 @@
 export class Details {
+    name?: string;
     street?: string;
     city?: string;
     state?: string;
