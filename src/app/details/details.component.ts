@@ -76,12 +76,12 @@ export class DetailsComponent implements OnInit {
       try {
         distance = result["rows"][0]["elements"][0]["distance"]["text"];
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
       try {
         duration = result["rows"][0]["elements"][0]["duration"]["text"];
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
 
       // Call the twilio api to send out the initial text message
@@ -96,21 +96,15 @@ export class DetailsComponent implements OnInit {
    * Purpose: Calls the Twilio Service which calls the API to send out the initial text message
    */
   private callTwilioApi(distance: string, duration: string): void {
-    console.log(this.twilioService);
-    this.twilioService.sendInitialTextMessage(this.details, distance, duration).subscribe(
-      (res) => {
-        // Move the route to the next page.  Pass Details object
-        console.log(res)
-        this.router.navigate(['/locate', {
-          'name': this.details.name,
-          'street': this.details.street,
-          'city': this.details.city,
-          'state': this.details.state,
-          'phone': this.details.phone_number
-        }]);
-      },
-      (error) => console.log(error)
-    );
+    if (this.twilioService.sendInitialTextMessage(this.details, distance, duration)) {
+      this.router.navigate(['/locate', {
+        'name': this.details.name,
+        'street': this.details.street,
+        'city': this.details.city,
+        'state': this.details.state,
+        'phone': this.details.phone_number
+      }]);
+    }
   }
 
   /* 

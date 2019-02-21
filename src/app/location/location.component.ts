@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { routerNgProbeToken } from '@angular/router/src/router_module';
 import { TwilioService } from '../twilio.service';
 
 @Component({
@@ -41,7 +40,7 @@ export class LocationComponent implements OnInit {
     this.intervalId = setInterval(() => {
       navigator.geolocation.getCurrentPosition(
         (position) => this.reverseGeocode(position),
-        (error) => console.log(error)
+        (error) => console.error(error)
       )
     }, this.TIME_BETWEEN_LOCATION_QUERIES);
   }
@@ -50,28 +49,27 @@ export class LocationComponent implements OnInit {
    * Purpose: Call the Geocoder API, then check if the address from the geocoder matches the destination address
    */
   private reverseGeocode(position: Position) {
-    console.log(position);
     this.reverseGeocodePromise(position).then(
       (result) => {
-        // Geocode API Result:
-        console.log(result)
+        // Geocode API Result: 
+
+        // TODO: Uncomment
+        // console.log(result)
         Object.keys(result).forEach((addressIndexKey) => {
           Object.keys(result[addressIndexKey]).forEach((formattedAddressKey) => {
             if (formattedAddressKey.toLowerCase() === "formatted_address") {
               if (this.compareAddress(result[addressIndexKey][formattedAddressKey])) {
                 clearInterval(this.intervalId);
-                this.twilioService.sendTextMessage(this.phoneNumber, this.name).subscribe(
-                  (twilioResult) => this.router.navigate(['success']),
-                  (twilioError) => console.log(twilioError)
-                );
-
-                return;
+                if (this.twilioService.sendTextMessage(this.phoneNumber, this.name)) {
+                  this.router.navigate(['success']);
+                  return;
+                }
               }
             }
           })
         });
       },
-      (error) => console.log(error));
+      (error) => console.error(error));
   }
 
   /*

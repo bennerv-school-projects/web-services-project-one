@@ -11,45 +11,58 @@ export class TwilioService {
 
   private twilioSid: string = "AC4e51997237b51b3aa0766048e41130ec";
   private twilioFromNumber: string = "+17152038200";
-  private twilioAuthorizationHeader = new HttpHeaders({ 'Authorization': "" });
-
   private twilioBaseApi: string = "https://api.twilio.com/2010-04-01";
-  private twilioSendSmsApi: string = this.twilioBaseApi + "/Accounts/" + this.twilioSid + "/Messages.json";
+  private twilioSendSmsApi: string = this.twilioBaseApi + "/Accounts/" + this.twilioSid + "/Messages";
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) { }
 
   /*
    * Purpose: Sends the initial query to the Twilio API to send out a text message
-   * Returns: An Observable<any> which is the response of the API call when it occurs
+   * Returns: A boolean indicating whether it was able to send a text message successfully
    */
-  public sendInitialTextMessage(details: Details, distance: string, duration: string): Observable<any> {
-    const httpOptions = {
-      headers: this.twilioAuthorizationHeader
-    };
-
+  public sendInitialTextMessage(details: Details, distance: string, duration: string): boolean {
     let formData: FormData = new FormData();
     formData.append("From", this.twilioFromNumber);
     formData.append("To", "+1" + details.phone_number);
     formData.append("Body", details.name + " will reach " + details.street + " " + details.city + " " + details.state + " in approximately " + duration + ". Approximate distance: " + distance);
 
-    return this.http.post(this.twilioSendSmsApi, formData, httpOptions);
+    let xhttp = new XMLHttpRequest();
+    xhttp.open("POST", this.twilioSendSmsApi, false);
+    xhttp.setRequestHeader("Authorization", "Basic ");
+    xhttp.send(formData);
+
+    console.log(xhttp.responseXML);
+
+    let document: Document = xhttp.responseXML;
+    if (document.getElementsByTagName('Status')[0].innerHTML.toString() == "queued") {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /*
    * Purpose: Sends the initial query to the Twilio API to send out a text message
-   * Returns: An Observable<any> which is the response of the API call when it occurs
+   * Returns: A boolean indicating whether it was able to send a text message successfully
    */
-  public sendTextMessage(phoneNumber: string, name: string): Observable<any> {
-    const httpOptions = {
-      headers: this.twilioAuthorizationHeader
-    };
-
+  public sendTextMessage(phoneNumber: string, name: string): boolean {
     let formData: FormData = new FormData();
     formData.append("From", this.twilioFromNumber);
     formData.append("To", "+1" + phoneNumber);
     formData.append("Body", name + " has made it to their destination! Thanks for using Text Me When You Get There");
 
-    return this.http.post(this.twilioSendSmsApi, formData, httpOptions);
+    let xhttp = new XMLHttpRequest();
+    xhttp.open("POST", this.twilioSendSmsApi, false);
+    xhttp.setRequestHeader("Authorization", "Basic ");
+    xhttp.send(formData);
+
+    // console.log(xhttp.responseXML);
+
+    let document: Document = xhttp.responseXML;
+    if (document.getElementsByTagName('Status')[0].innerHTML.toString() == "queued") {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
